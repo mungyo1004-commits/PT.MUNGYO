@@ -1,0 +1,10 @@
+{
+  "name": "pt-mungyo-erp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PT MUNGYO 생산·재고·거래처·부자재 ERP (Netlify+Blobs 또는 Vercel+Vercel Blob 배포 지원)",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0",
+    "@vercel/blob": "^2.6.1"
+  }
+}
