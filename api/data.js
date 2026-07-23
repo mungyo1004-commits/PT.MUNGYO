@@ -11,8 +11,17 @@ const BLOB_PATHNAME = 'pt-mungyo-db.json';
 // 예외(exception)를 던집니다 — 그 예외는 여기서 잡지 않고 그대로 호출부로
 // 전달해서, 호출부가 500 에러로 응답하고 클라이언트가 안전하게 로컬 캐시로
 // 폴백하도록 합니다.
+// Vercel 프로젝트가 OIDC로 이 store에 연결되어 있으면 SDK가 기본적으로 OIDC 토큰을
+// 사용하는데, 환경에 따라 OIDC 토큰의 access scope가 제대로 반영되지 않아
+// "Cannot use public access on a private store" 오류가 나는 경우가 있습니다.
+// BLOB_READ_WRITE_TOKEN이 환경변수로 존재하면 그걸 명시적으로 사용해서
+// OIDC 경로를 우회하고 이 문제를 피합니다.
+const blobAuthOptions = process.env.BLOB_READ_WRITE_TOKEN
+  ? { token: process.env.BLOB_READ_WRITE_TOKEN }
+  : {};
+
 async function readCurrent() {
-  const result = await get(BLOB_PATHNAME, { access: 'private' });
+  const result = await get(BLOB_PATHNAME, { access: 'private', ...blobAuthOptions });
   if (!result || !result.stream) return null; // 최초 실행 등, 정말로 데이터가 없는 경우만 null
   const chunks = [];
   const reader = result.stream.getReader();
@@ -61,6 +70,7 @@ module.exports = async (req, res) => {
         contentType: 'application/json; charset=utf-8',
         addRandomSuffix: false,
         allowOverwrite: true,
+        ...blobAuthOptions,
       });
       res.status(200).json({ ok: true });
       return;
