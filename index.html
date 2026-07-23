@@ -931,11 +931,17 @@ async function doSave(){
   saveInFlight = true;
   setSaveStatus(retryAttempt>0 ? 'retrying' : 'saving');
   const keysToSave = Array.from(dirtyKeys);
-  const patch = {};
-  keysToSave.forEach(k=>{ patch[k] = DB[k]; });
   try{
-    await serverSave(patch);
-    keysToSave.forEach(k=>dirtyKeys.delete(k));
+    // Vercel 서버 함수는 한 번에 보낼 수 있는 요청 본문 크기가 약 4.5MB로
+    // 고정되어 있습니다. "백업 불러오기"처럼 여러 항목(테이블)을 한꺼번에
+    // 저장하면 전체 용량이 이 한도를 넘어 저장이 계속 실패할 수 있어서,
+    // 항목(키)별로 나눠서 하나씩 순서대로 저장합니다. 저장에 성공한 항목은
+    // 바로 dirtyKeys에서 빠지므로, 중간에 실패해도 이미 저장된 항목까지
+    // 다시 보내지 않고 남은 항목만 재시도합니다.
+    for(const k of keysToSave){
+      await serverSave({ [k]: DB[k] });
+      dirtyKeys.delete(k);
+    }
     isOnline = true;
     retryAttempt = 0;
     lastSyncedAt = nowStr();
