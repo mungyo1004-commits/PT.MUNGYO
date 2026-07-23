@@ -740,7 +740,7 @@ const STORE_KEYS = {
 let DB = { items:[], partners:[], equipment:[], production:[], txn:[], calendar:[], orders:[], worklogs:[], materials:[], materialTxn:[], materialCategories:[], submaterials:[], submaterialTxn:[], submatCategories:[], teamNames:[] };
 let LOADED = false;
 
-// 이 앱은 Netlify Functions + Netlify Blobs를 통해 서버에 데이터를 저장합니다.
+// 이 앱은 Vercel Functions + Vercel Blob을 통해 서버에 데이터를 저장합니다.
 // 여러 기기/사람이 같은 주소로 접속하면 동일한 데이터를 보고, 저장하면 서버에 반영되어
 // 다른 기기에서도 (자동 새로고침 주기 또는 수동 새로고침을 통해) 같은 데이터를 보게 됩니다.
 // 네트워크가 끊기면 임시로 이 브라우저의 localStorage에 캐시해두고, 다시 연결되면 서버와 동기화합니다.
@@ -902,7 +902,7 @@ function setSaveStatus(state, timeStr){
 
    Also: only the table(s) that actually changed are sent to the server (patch),
    not the whole database every time. Combined with the server merging the patch
-   into whatever is currently stored (see netlify/functions/data.js), this stops
+   into whatever is currently stored (see api/data.js), this stops
    one device's save from silently wiping out another device/tab's more recent
    changes to a *different* table that this browser's local copy hadn't caught
    up on yet. (변경된 항목만 서버로 보내고, 서버는 그 항목만 병합 저장하므로
